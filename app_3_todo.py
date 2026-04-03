@@ -17,6 +17,9 @@ from collections import Counter
 
 import streamlit as st
 
+if "todos" not in st.session_state:
+    st.session_state.todos = []
+
 # TODO 1: Import word_tokenize và sentiment từ thư viện underthesea
 # from underthesea import ...
 
@@ -77,11 +80,13 @@ def underthesea_tokenize(text: str):
       - tokens_text: chuỗi token (dạng format="text")
     """
     # ---- VIẾT CODE TẠI ĐÂY ----
-    tokens_list = []       # thay bằng word_tokenize(text)
-    tokens_text = ""       # thay bằng word_tokenize(text, format="text")
-    # ----------------------------
-    return tokens_list, tokens_text
+    from underthesea import word_tokenize
 
+    def underthesea_tokenize(text: str):
+        tokens_list = word_tokenize(text)
+        tokens_text = word_tokenize(text, format="text")
+        return tokens_list, tokens_text 
+    # ----------------------------
 
 def safe_sentiment(text: str) -> str:
     """
@@ -96,7 +101,26 @@ def safe_sentiment(text: str) -> str:
     Yêu cầu: Trả về string nhãn sentiment, ví dụ: 'positive', 'negative'.
     """
     # ---- VIẾT CODE TẠI ĐÂY ----
-    return "chưa hoàn thành TODO 3"
+    from underthesea import sentiment
+
+    def safe_sentiment(text: str) -> str:
+        try:
+            result = sentiment(text)
+
+            if isinstance(result, (list, tuple)):
+                result = result[0]
+
+            result = str(result).lower()
+
+            if "positive" in result:
+                return "positive"
+            elif "negative" in result:
+                return "negative"
+            else:
+                return "neutral"
+
+        except Exception:
+            return "unknown"
     # ----------------------------
 
 
@@ -192,25 +216,25 @@ with col_right:
         # ============================================================
         st.markdown("### 1️⃣ Tokenization — So sánh 2 cách")
 
-        # --- Cách 1: split đơn giản (đã có sẵn) ---
+        # --- Cách 1: split đơn giản ---
         tokens_simple = simple_tokenize(norm_text)
         st.markdown("**Cách 1 — split() đơn giản:**")
         st.code(" | ".join(tokens_simple))
 
         # --- Cách 2: underthesea word_tokenize ---
         st.markdown("**Cách 2 — underthesea `word_tokenize`:**")
+        from underthesea import word_tokenize  # đảm bảo import ở đầu file
 
-        # TODO 4a: Gọi underthesea_tokenize(text) và hiển thị kết quả.
-        #
-        # Gợi ý:
-        #   tokens_list, tokens_text = underthesea_tokenize(text)
-        #   st.code(" | ".join(tokens_list))
-        #   st.write("Dạng text:", tokens_text)
-        #
-        # ---- VIẾT CODE TẠI ĐÂY ----
-        st.warning("⚠️ Chưa hoàn thành TODO 4a — Hiển thị kết quả underthesea tokenize")
-        tokens_ut = tokens_simple  # tạm dùng simple, thay bằng tokens_list từ underthesea
-        # ----------------------------
+        # trực tiếp dùng word_tokenize, không gọi hàm riêng
+        tokens_list = word_tokenize(norm_text)
+        tokens_text = word_tokenize(norm_text, format="text")
+
+        st.code(" | ".join(tokens_list))
+        st.write("Dạng text:", tokens_text)
+
+        tokens_ut = tokens_list  # dùng cho các bước tiếp theo
+
+        
 
         # ============================================================
         # PHẦN B — Tiền tố Hán-Việt (dùng token từ underthesea)
@@ -311,7 +335,24 @@ with col_right:
         #   st.info(f"**Nhãn underthesea:** `{senti_label}`")
         #
         # ---- VIẾT CODE TẠI ĐÂY ----
-        st.warning("⚠️ Chưa hoàn thành TODO 4b — Hiển thị kết quả underthesea sentiment")
+        from underthesea import sentiment  # đảm bảo import ở đầu file nếu chưa có
+
+        def safe_sentiment(text: str) -> str:
+            """
+            Gọi underthesea.sentiment() để lấy nhãn cảm xúc.
+            Trả về string: 'positive', 'negative', 'neutral'.
+            """
+            try:
+                s = sentiment(text)
+                if isinstance(s, (list, tuple)):
+                    s = s[0]  # lấy phần tử đầu nếu trả về list/tuple
+                return s
+            except Exception as e:
+                return f"Không thể phân tích: {e}"
+
+        # Gọi hàm và hiển thị kết quả
+        senti_label = safe_sentiment(norm_text)
+        st.info(f"**Nhãn underthesea:** `{senti_label}`")
         # ----------------------------
 
         # --- So sánh 2 cách ---
