@@ -1,4 +1,9 @@
+**Thông tin sinh viên:**
 
+| STT | Mã Số Sinh Viên | Họ và Tên            |
+|-----|-----------------|----------------------|
+| 1   | 123000415       | Phạm Thùy Yến Phương |
+| 2   |                 |                      |
 ***
 
 ## 1. Review điện thoại (tích cực nhưng có nhược điểm)
